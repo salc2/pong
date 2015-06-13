@@ -30,6 +30,10 @@ class Application extends Controller {
   }
 
   class MyWebSocketActor(out: ActorRef) extends Actor with ActorLogging{
+    override def preStart() ={
+      log.info("yeah starting")
+      out ! "Starting...!"
+    }
     def receive = {
       case msg: String =>
         log.info(msg)

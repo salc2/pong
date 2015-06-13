@@ -1,5 +1,7 @@
 (function(){
-var ws;
+var ws,
+messages,
+observer;
 
 function sketch(p){
     p.setup = function(){
@@ -13,8 +15,17 @@ function sketch(p){
 }
 
 ws = new WebSocket('ws://localhost:9000/ws');
-ws.onmessage = function(e){console.log(e.data);};
+observer = Rx.Observer.create(function(n){
+  console.log(n);
+},
+function(e){},
+function(){});
+
+messages = Rx.Observable.fromEvent(ws,'message').
+map(function(x){
+  return x.data;
+  });
+
+messages.subscribe(observer);
 new p5(sketch,'board');
-
-
 })();
