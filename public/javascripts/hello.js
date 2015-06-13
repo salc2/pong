@@ -31,8 +31,7 @@ function sketch(p){
 ws = new WebSocket('ws://localhost:9000/ws');
 observer = Rx.Observer.create(
     function(n){
-      console.log(n);
-    },
+      console.log(n);},
     function(e){},
     function(){});
 
