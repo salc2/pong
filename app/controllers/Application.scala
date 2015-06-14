@@ -24,6 +24,11 @@ class Application extends Controller {
       case Some(_) => Right(MyWebSocketActor.props)
     })
   }
+	
+  def joystick = Action { implicit request =>
+  	Ok(views.html.joystick("Joystick"))
+  }
+
 }
 
 object MyWebSocketActor {

@@ -4,6 +4,7 @@
 
 # Home page
 GET     /                           controllers.Application.index
+GET     /joystick                   controllers.Application.joystick
 GET     /ws                         controllers.Application.socket
 
 # Map static resources from the /public folder to the /assets URL path
