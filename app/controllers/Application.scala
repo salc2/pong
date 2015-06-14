@@ -1,9 +1,9 @@
 package controllers
 
+import play.api.libs.concurrent.Akka
 import play.api.mvc._
 import akka.actor._
 import play.api.Play.current
-
 import scala.concurrent.Future
 
 class Application extends Controller {
@@ -24,21 +24,20 @@ class Application extends Controller {
       case Some(_) => Right(MyWebSocketActor.props)
     })
   }
-
-  object MyWebSocketActor {
-    def props(out: ActorRef) = Props(new MyWebSocketActor(out))
-  }
-
-  class MyWebSocketActor(out: ActorRef) extends Actor with ActorLogging{
-    override def preStart() ={
-      log.info("yeah starting")
-      out ! "Starting...!"
-    }
-    def receive = {
-      case msg: String =>
-        log.info(msg)
-        out ! ("I received your message: " + msg)
-    }
-  }
-
 }
+
+object MyWebSocketActor {
+  def props(out: ActorRef) = Props(new MyWebSocketActor(out))
+}
+
+class MyWebSocketActor(out: ActorRef) extends Actor with ActorLogging {
+  override def preStart = {
+    log.info("yeah starting")
+  }
+  def receive = {
+    case msg: String =>
+      log.info(msg)
+      out ! ("I received your message: " + msg)
+  }
+}
+
