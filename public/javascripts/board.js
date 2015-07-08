@@ -1,6 +1,9 @@
 (function(){
 var WIDTH = 900,
 HEIGHT = 450;
+var host, 
+tcp,
+path;
 
 var ws,
 messages,
@@ -27,8 +30,10 @@ function sketch(p){
       p.rect(lPaddle.x,lPaddle.y,20,80);
     };
 }
-
-ws = new WebSocket('ws://localhost:9000/ws');
+tcp = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+host = window.location.host;
+path = window.location.pathname;
+ws = new WebSocket(tcp+host+path+'ws');
 observer = Rx.Observer.create(
     function(n){
       console.log(n);},
