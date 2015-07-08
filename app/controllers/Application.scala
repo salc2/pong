@@ -5,24 +5,27 @@ import play.api.mvc._
 import akka.actor._
 import play.api.Play.current
 import scala.concurrent.Future
+import akka.stream.ActorMaterializer
+import akka.stream.scaladsl.{Source, Flow, Sink}
+import akka.stream.OverflowStrategy.dropHead
+import play.api.libs.json._
 
 class Application extends Controller {
-  val USER = "user";
-  var counter = 0;
-
+  
+implicit val system = Akka.system
+import system.dispatcher
+implicit val materializer = ActorMaterializer()
+val streams = Source.actorRef[JsValue](0, dropHead)
+val ref = Flow[JsValue]
+	.to(Sink.foreach(o => println(o.toString)))
+	.runWith(streams)
+	
   def index = Action { implicit request =>
-    val uid: String = request.session.get(USER).getOrElse {
-      counter += 1
-      counter.toString
-    }
-    Ok(views.html.index("Hello Pong")).withSession(request.session + (USER -> counter.toString))
+    Ok(views.html.index("Hello Pong"))
   }
 
-  def socket = WebSocket.tryAcceptWithActor[String, String] { request =>
-    Future.successful(request.session.get("user") match {
-      case None => Left(Forbidden)
-      case Some(_) => Right(MyWebSocketActor.props)
-    })
+  def socket = WebSocket.acceptWithActor[JsValue, JsValue] { request => wsActor =>
+      MyWebSocketActor.props(wsActor)
   }
 	
   def joystick = Action { implicit request =>
@@ -31,18 +34,16 @@ class Application extends Controller {
 
 }
 
+
+
 object MyWebSocketActor {
-  def props(out: ActorRef) = Props(new MyWebSocketActor(out))
+  def props(wsActor: ActorRef) = Props(new MyWebSocketActor(wsActor))
 }
 
-class MyWebSocketActor(out: ActorRef) extends Actor with ActorLogging {
-  override def preStart = {
-    log.info("yeah starting")
-  }
+class MyWebSocketActor(wsActor: ActorRef) extends Actor with ActorLogging {
   def receive = {
-    case msg: String =>
-      log.info(msg)
-      out ! ("I received your message: " + msg)
+    case msg: JsValue =>
+      log.info(msg.toString)
   }
 }
 
