@@ -18,12 +18,20 @@ function dispatch(obj){
  var ball,
  lPaddle,
  rPaddle;
- Rx.Observable.fromEvent(document,'positions').
+ var paddles = Rx.Observable.fromEvent(document,'positions').
 	map(function(o){return o.detail;}).
+	filter(function(x){ return x.type === 'paddles'}).
 	filter(function(x){
 			return x.posy >= 80 && x.posy <= H-80; 
-	}).subscribe(function(n){
+	});
+
+	paddles.filter(function(x){ return x.side === 'rpaddle';}).
+	subscribe(function(n){
 		rPaddle.y = n.posy;
+	});
+	paddles.filter(function(x){ return x.side === 'lpaddle';}).
+	subscribe(function(n){
+		lPaddle.y = n.posy;
 	});
  p.setup = function(){
 	 p.createCanvas(W,H);

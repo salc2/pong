@@ -13,7 +13,7 @@ host = window.location.host;
 path = window.location.pathname;
 ws = new WebSocket(tcp+host+'/ws'+path);
 
-eventstreams = Rx.Observable.fromEvent(document,'joystickmove')
+eventstreams = Rx.Observable.fromEvent(document,'paddlemove')
 .map(function(x){
 	return x.detail;
 });
@@ -49,7 +49,8 @@ p.draw = function(){
 p.touchMoved = function(){
 	posY = p.touchY;
 	var y = (p.touchY * 450) / h;
-	document.dispatchEvent(new CustomEvent('joystickmove',{'detail':{posy: y}}));
+	document.dispatchEvent(new CustomEvent('paddlemove',
+	{'detail':{type: 'paddles', side: path.replace('/',''), posy: y}}));
 };
 
 p.touchEnded = function(){
