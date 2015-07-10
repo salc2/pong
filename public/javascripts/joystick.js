@@ -13,10 +13,13 @@ host = window.location.host;
 path = window.location.pathname;
 ws = new WebSocket(tcp+host+'/ws'+path);
 
-eventstreams = Rx.Observable.fromEvent(document,'joystickmove');
+eventstreams = Rx.Observable.fromEvent(document,'joystickmove')
+.map(function(x){
+	return x.detail;
+});
 observer = Rx.Observer.create(
 	function(n){
-		ws.send(JSON.stringify(n.detail));
+		ws.send(JSON.stringify(n));
 	},
 	function(e){ console.log(e);},
 	function(){});
