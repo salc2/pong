@@ -1,7 +1,4 @@
 (function(){
-var w = window.innerWidth,
-h = window.innerHeight,
-posY = h/2;
 
 var ws, 
 eventstreams, 
@@ -10,18 +7,16 @@ observer;
 var host,
 path,
 tcp;
+
 tcp = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
 host = window.location.host;
 path = window.location.pathname;
 ws = new WebSocket(tcp+host+'/ws'+path);
+
 eventstreams = Rx.Observable.fromEvent(document,'joystickmove');
 observer = Rx.Observer.create(
 	function(n){
-		try{
-			ws.send(JSON.stringify(n.detail));
-		}catch(e){
-			console.log(e);
-		}
+		ws.send(JSON.stringify(n.detail));
 	},
 	function(e){ console.log(e);},
 	function(){});
@@ -29,6 +24,10 @@ observer = Rx.Observer.create(
 eventstreams.subscribe(observer);
 
 function sketch(p){
+var w = window.innerWidth,
+h = window.innerHeight/2,
+posY = h/2;
+
 p.setup = function() {
 	p.createCanvas(w, h);
 };
@@ -46,11 +45,12 @@ p.draw = function(){
 
 p.touchMoved = function(){
 	posY = p.touchY;
-	document.dispatchEvent(new CustomEvent('joystickmove',{'detail':{posy: posY}}));
+	var y = (p.touchY * 450) / h;
+	document.dispatchEvent(new CustomEvent('joystickmove',{'detail':{posy: y}}));
 };
 
 p.touchEnded = function(){
-	//posY = h/2;
+	posY = h/2;
 };
 }
 new p5(sketch);

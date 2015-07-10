@@ -36,7 +36,7 @@ path = window.location.pathname;
 ws = new WebSocket(tcp+host+path+'ws');
 observer = Rx.Observer.create(
     function(n){
-      console.log(n);},
+      rPaddle.y = JSON.parse(n).posy; },
     function(e){},
     function(){});
 

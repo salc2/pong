@@ -16,16 +16,19 @@ implicit val system = Akka.system
 import system.dispatcher
 implicit val materializer = ActorMaterializer()
 val streams = Source.actorRef[JsValue](0, dropHead)
-val ref = Flow[JsValue]
-	.to(Sink.foreach(o => println(o.toString)))
+
+val sink = system.actorOf(Props[SinkActor], name = "sink")
+
+val srcRef = Flow[JsValue]
+	.to(Sink.actorRef(sink,"Completed"))
 	.runWith(streams)
 	
   def index = Action { implicit request =>
     Ok(views.html.index("Hello Pong"))
   }
 
-  def socket = WebSocket.acceptWithActor[JsValue, JsValue] { request => wsActor =>
-      MyWebSocketActor.props(wsActor)
+  def socket = WebSocket.acceptWithActor[JsValue, JsValue] { request => wsRef =>
+      MyWebSocketActor.props(wsRef, srcRef, sink)
   }
 	
   def joystick = Action { implicit request =>
@@ -37,13 +40,27 @@ val ref = Flow[JsValue]
 
 
 object MyWebSocketActor {
-  def props(wsActor: ActorRef) = Props(new MyWebSocketActor(wsActor))
+  def props(wsRef: ActorRef, srcRef: ActorRef, sinkRef: ActorRef) = 
+	Props(new MyWebSocketActor(wsRef,srcRef,sinkRef))
+	case class Out(m:JsValue)
+	case object Subscribe
+}
+import MyWebSocketActor._
+class MyWebSocketActor(wsRef: ActorRef, srcRef: ActorRef, sinkRef: ActorRef) extends 
+	Actor with ActorLogging {
+  override def preStart = sinkRef ! Subscribe
+  def receive = {
+    case Out(m) => wsRef ! m
+    case msg: JsValue =>
+      srcRef ! msg
+  }
 }
 
-class MyWebSocketActor(wsActor: ActorRef) extends Actor with ActorLogging {
-  def receive = {
-    case msg: JsValue =>
-      log.info(msg.toString)
-  }
+class SinkActor extends Actor with ActorLogging {
+	var outs = Set[ActorRef]()
+	def receive = {
+		case msg: JsValue =>  outs foreach{ _ ! Out(msg)}
+		case Subscribe => outs += sender()
+	}
 }
 
