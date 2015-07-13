@@ -10,78 +10,92 @@
  messages,
  observer;
 
-function dispatch(obj){
-	document.dispatchEvent(new CustomEvent('positions',{detail: obj}));
-}
-
-function collision(o){
-var b = o.ball,
-lp = o.lpad,
-rp = o.rpad;
-b.spdy = b.y >= H-10 || 
-b.y <= 10 ? b.spdy * -1 : b.spdy;
-
-if(b.x+10 >= rp.x-10 && (rp.y+40 >= b.y-10 && rp.y-40 <= b.y+10 ) ||
-	(b.x-10 <= lp.x+10 && (lp.y+40 >= b.y-10 && lp.y-40 <= b.y+10 ))){
-   b.spdx = b.spdx * -1;
+ function dispatch(obj){
+ document.dispatchEvent(new CustomEvent('positions',{detail: obj}));
  }
-	return o;
+
+ 
+function collisionX(o){
+  var b = o.ball,
+ lp = o.lpad,
+ rp = o.rpad,
+ changed = b.x+10 >= rp.x-10 && (rp.y+40 >= b.y-10 && rp.y-40 <= b.y+10 ) ||
+		 (b.x-10 <= lp.x+10 && (lp.y+40 >= b.y-10 && lp.y-40 <= b.y+10 ));
+	 return changed;
 }
 
-function move(o){
-	var b = o.ball;
-	b.x += b.spdx;
-	b.y += b.spdy;
-	if(b.x > W-40 || b.x < 40){
-		b.x = W/2;
-		b.y = H/2;
-	}
-}
+
+function collisionY(o){
+
+ var b = o.ball,
+ lp = o.lpad,
+ rp = o.rpad, 
+ changed = (b.y >= H-10 || b.y <= 10);
+ return changed;
+ }
+
+ function move(o){
+	 var b = o.ball;
+	 b.spdx = collisionX(o) ? b.spdx * -1 : b.spdx;
+	 b.spdy = collisionY(o) ? b.spdy * -1 : b.spdy;
+	 b.x += b.spdx;
+	 b.y += b.spdy;
+	 if(b.x > W-40 || b.x < 40){
+		 b.x = W/2;
+		 b.y = H/2;
+	 }
+	return o;
+ }
 
 
  function sketch(p){
- var ball,
- lPaddle,
- rPaddle;
- 
- var positions,
- paddles,
- moves;
 
- positions = Rx.Observable.fromEvent(document,'positions').
-	map(function(o){return o.detail;});
+	 var positions,
+	     paddles,
+	     moves,
+		sound;
 
- paddles = positions.
-	filter(function(x){ return x.type === 'paddles'}).
-	filter(function(x){
-			return x.posy >= 80 && x.posy <= H-80; 
-	});
+	 positions = Rx.Observable.fromEvent(document,'positions').
+		 map(function(o){return o.detail;});
 
-	paddles.filter(function(x){ return x.side === 'rpaddle';}).
-	subscribe(function(n){
-		rPaddle.y = n.posy;
-	});
-	paddles.filter(function(x){ return x.side === 'lpaddle';}).
-	subscribe(function(n){
-		lPaddle.y = n.posy;
-	});
- moves = positions.filter(function(b){ return b.type === 'moves';});
- moves.map(collision).subscribe(move);
- p.setup = function(){
-	 p.createCanvas(W,H);
-	 p.frameRate(60);
-	 ball = {x: W/2, y: H/2, spdy: 1, spdx: 4};
-	 lPaddle = {x: 40, y: H/2};
-	 rPaddle = {x: W-40, y: H/2};
-	 p.rectMode(p.CENTER);
- };
- p.draw = function(){
-	 p.background(3);
-	 dispatch({type: 'moves', ball: ball, lpad: lPaddle, rpad: rPaddle});
-	 p.rect(ball.x,ball.y,20,20);
-	 p.rect(rPaddle.x,rPaddle.y,20,80);
-	 p.rect(lPaddle.x,lPaddle.y,20,80);
- };
+	 paddles = positions.
+		 filter(function(x){ return x.type === 'paddles'}).
+		 filter(function(x){
+				 return x.posy >= 80 && x.posy <= H-80; 
+				 });
+
+	 moves = positions.filter(function(b){ return b.type === 'moves';});
+	 moves.delay(16.66).map(move).do(draw).subscribe(dispatch);
+	 
+	 p.preload = function(){
+		 sound = p.loadSound('/assets/ping-pong-ball-hit.wav');	
+	 };
+	 
+	p.setup = function(){
+		 var ball,
+		     lPaddle,
+		     rPaddle,
+		     tmp;
+		 p.createCanvas(W,H);
+		 ball = {x: W/2, y: H/2, spdy: 1, spdx: 5};
+		 lPaddle = {x: 40, y: H/2};
+		 rPaddle = {x: W-40, y: H/2};
+		 tmp = {type: 'moves', ball: ball, lpad: lPaddle, rpad: rPaddle}
+		 p.rectMode(p.CENTER);
+		 dispatch(tmp);
+	 };
+	 function draw(objs){
+		var ball = objs.ball,
+		 rPaddle = objs.rpad,
+		 lPaddle = objs.lpad;
+		 p.background(3);
+		 p.rect(ball.x,ball.y,20,20);
+		 p.rect(rPaddle.x,rPaddle.y,20,80);
+		 p.rect(lPaddle.x,lPaddle.y,20,80);
+		 if(collisionX(objs) || collisionY(objs)){
+			sound.play();
+		}
+	 };
  }
 
  tcp = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
