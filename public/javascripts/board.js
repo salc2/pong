@@ -20,10 +20,10 @@
  var b = o.ball,
  lp = o.lpad,
  rp = o.rpad,
- changed = b.x+10 >= rp.x-10 && 
-	 (rp.y+40 >= b.y-10 && rp.y-40 <= b.y+10 ) ||
-	 (b.x-10 <= lp.x+10 && (lp.y+40 >= b.y-10 && 
-				lp.y-40 <= b.y+10 ));
+ changed = (b.x+10 > rp.x-10 && 
+	  rp.y+40 > b.y-10 && rp.y-40 < b.y+10 ) ||
+	  (b.x-10 < lp.x+10 && (lp.y+40 > b.y-10 && 
+				lp.y-40 < b.y+10 ));
  return changed;
  }
 
@@ -32,7 +32,7 @@
 	 var b = o.ball,
 	     lp = o.lpad,
 	     rp = o.rpad, 
-	     changed = (b.y >= H-10 || b.y <= 10);
+	     changed = (b.y > H-10 || b.y < 10);
 	 return changed;
  }
 
@@ -63,7 +63,6 @@
 				rPaddle.y = o.posy;
 			}
 		 }).subscribe(function(o){
-			console.log(o);
 		 });
 		 source.map(move).
 			 do(function(o){
