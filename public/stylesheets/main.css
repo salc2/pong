@@ -1,17 +1,17 @@
 body{
-    background-color: yellow;
-    font-family: 'Press Start 2P', cursive;
+	background-color: yellow;
+	font-family: 'Black Ops One';
 }
 h1 {
-    text-align: center;
-    font-size: 60px;
-    color: white;
-    text-shadow: 0px 0px 5px black;
+	text-align: center;
+	font-size: 60px;
+color: white;
+       text-shadow: 0px 0px 5px black;
 }
 div{
-    width: 900px;
-    height: 450px;
-    margin: 0 auto;
-    background-color: #333333;
-    box-shadow: 0px 0px 10px black;
+width: 900px;
+height: 450px;
+margin: 0 auto;
+	background-color: #333333;
+	box-shadow: 0px 0px 10px black;
 }
