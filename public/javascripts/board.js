@@ -14,8 +14,8 @@
 
  messages = Rx.Observable.fromEvent(ws,'message').
  map(function(x){ return JSON.parse(x.data);}).
- filter(function(x){ return x.type === 'paddles'}).
- filter(function(x){ return x.posy >= 40 && x.posy <= H-40; });
+ filter(function(x){ return x.lPaddle.y >= 40 && x.lPaddle.y <= H-40; }).
+ filter(function(x){ return x.rPaddle.y >= 40 && x.rPaddle.y <= H-40; });
 
 
  function sketch(source){
@@ -79,11 +79,8 @@
 
 
 		 source.subscribe(function(o){
-				 if(o.side === 'lpaddle'){
-				 lPaddle.y = o.posy;
-				 }else{
-				 rPaddle.y = o.posy;
-				 }
+				 lPaddle.y = o.lPaddle.y;
+				 rPaddle.y = o.rPaddle.y;
 				 });
 
 		 p.preload = function(){

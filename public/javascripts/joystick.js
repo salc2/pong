@@ -39,7 +39,7 @@
 		 p.touchMoved = function(){
 		 posY = p.touchY;
 		 var y = (p.touchY * 450) / h;
-		 o.onNext({type: 'paddles', side: path.replace('/',''), posy: y});
+		 o.onNext({typee: 'paddles', side: path.replace('/',''), posy: y});
 		 };
 		 }).
 		map(function(i){return JSON.stringify(i);}).
