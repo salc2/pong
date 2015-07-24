@@ -9,12 +9,15 @@ object WebSocketActor {
 		Props(new WebSocketActor(wsRef,gameRef))
 	case class Out(msg:Any)
 			   case object Subscribe
+			   case object Unsubscribe
 }
 
 import WebSocketActor._
 class WebSocketActor(wsRef: ActorRef, gameRef: ActorRef) extends 
 Actor with ActorLogging {
-	override def preStart = gameRef ! Subscribe
+	override def preStart = {
+		gameRef ! Subscribe
+		}
 		def receive = {
 			case m:OutMessage => wsRef ! m
 			case msg:InMessage => gameRef ! msg

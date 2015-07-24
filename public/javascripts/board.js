@@ -26,6 +26,16 @@
 		     lMarker,
 		     rMarker,
 		     sound;
+		 ball = {x: W/2, y: H/2, spdy: 1, spdx: 8};
+		 lPaddle = {x: 40, y: H/2, w: 20, h: 80};
+		 rPaddle = {x: W-40, y: H/2, w: 20, h: 80};
+		 rMarker = {points:0};
+		 lMarker = {points:0};
+		
+		 source.subscribe(function(o){
+				 lPaddle.y = o.lPaddle.y;
+				 rPaddle.y = o.rPaddle.y;
+				 });
 
 		 function isCollisionX(){
 			 var changed = (ball.x+10 > rPaddle.x-10 && 
@@ -78,10 +88,6 @@
 		 }
 
 
-		 source.subscribe(function(o){
-				 lPaddle.y = o.lPaddle.y;
-				 rPaddle.y = o.rPaddle.y;
-				 });
 
 		 p.preload = function(){
 			 sound = p.loadSound('/assets/ping-pong-ball-hit.wav');	
@@ -90,13 +96,8 @@
 		 p.setup = function(){
 			 p.createCanvas(W,H);
 			 p.rectMode(p.CENTER);
-			 ball = {x: W/2, y: H/2, spdy: 1, spdx: 8};
-			 lPaddle = {x: 40, y: H/2, w: 20, h: 80};
-			 rPaddle = {x: W-40, y: H/2, w: 20, h: 80};
 			 p.textSize(100);
 			 p.textFont('Black Ops One');
-			 rMarker = {points:0};
-			 lMarker = {points:0};
 		 };
 		 p.draw = function (){
 			 p.background(3);
