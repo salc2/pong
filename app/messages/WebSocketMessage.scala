@@ -1,7 +1,7 @@
 package messages
 
 import play.api.libs.json._
-
+import actors.GameActor._
 import play.api.mvc.WebSocket.FrameFormatter
 
 
@@ -16,6 +16,13 @@ implicit val outMessageFrameFormatter = FrameFormatter.jsonFrame[OutMessage]
 sealed trait Message
 case class InMessage(typee:String, side:String, posy:Double) extends Message
 case class OutMessage(ball:Ball, lPaddle:Paddle,rPaddle:Paddle) extends Message
-case class Ball(var x:Double,var y:Double,var spdx:Double,var spdy:Double, w:Double,h:Double)
-case class Paddle(var x:Double,var y:Double,w:Double,h:Double)
+object InToOutMessage{
+	def apply(i:InMessage, o:OutMessage):OutMessage = {
+		i.side match {
+			case "lpaddle" => o.copy(lPaddle=o.lPaddle.copy(y=i.posy))
+			case "rpaddle" => o.copy(rPaddle=o.rPaddle.copy(y=i.posy))
+			case         _ => o
+		}
+	}
+}
 }

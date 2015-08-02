@@ -17,7 +17,6 @@
  filter(function(x){ return x.lPaddle.y >= 40 && x.lPaddle.y <= H-40; }).
  filter(function(x){ return x.rPaddle.y >= 40 && x.rPaddle.y <= H-40; });
 
-
  function sketch(source){
 	 return function(p){
 		 var ball,
@@ -32,7 +31,7 @@
 		 rMarker = {points:0};
 		 lMarker = {points:0};
 		
-		 source.subscribe(function(o){
+		 source.do(function(i){console.log(i);}).subscribe(function(o){
 				 lPaddle.y = o.lPaddle.y;
 				 rPaddle.y = o.rPaddle.y;
 				 });
