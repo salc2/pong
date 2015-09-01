@@ -19,6 +19,11 @@ object GameActor{
 	val ball:Ball = Ball(450,225,1,8,20,20)
 	val lpaddle:Paddle = Paddle(40,225,20,80)
 	val rpaddle:Paddle = Paddle(410,225,20,80)
+	def moveGame(info:OutMessage):OutMessage = {
+		val bal = info.ball
+		val lpad = info.lPaddle
+		val rpad = info.rPaddle
+	}
 }
 
 class GameActor extends Actor with ActorLogging {
@@ -29,22 +34,24 @@ class GameActor extends Actor with ActorLogging {
 
 		override def preStart = context.system.eventStream.subscribe(self, classOf[DeadLetter])
 
-		val in1 = Source.actorRef[InMessage](10, dropHead)
+		val in1 = Source.actorRef[InMessage](1, dropHead)
 		val in2 = Source.single(OutMessage(ball,lpaddle,rpaddle))
-		val out = Sink.foreach(println)
+		val out = Sink.foreach(tellThem)
 		
 		val pipe = Flow(){ implicit b =>
   			import FlowGraph.Implicits._
 			val zip = b.add(ZipWith((i:InMessage,o:OutMessage) => InToOutMessage(i,o)))
 			val merge = b.add(MergePreferred[OutMessage](2))
 			val bcastOne = b.add(Broadcast[OutMessage](2))
-			val f1 = b.add(Flow[OutMessage].buffer(10,dropHead)) 
+			val f1 = b.add(Flow[OutMessage].buffer(1,dropHead)) 
+			val f2 = b.add(Flow[OutMessage].buffer(1,dropHead)) 
 			val bcastTwo = b.add(Broadcast[OutMessage](2))
 
 		in2 ~> merge.in(0)
 		       merge.out 		~> 	bcastOne.in
 			       	      bcastTwo.in  <~	bcastOne.out(0)
-		       merge.in(1) <~ bcastTwo.out(0)
+		      	  	      bcastTwo.out(0) ~> f2.inlet
+		       merge.in(1)		<~	 f2.outlet
 	zip.out ~> merge.preferred
 	   		f1.inlet   <~ bcastTwo.out(1)
 	zip.in1      <~ f1.outlet
